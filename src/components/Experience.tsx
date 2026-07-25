@@ -1,47 +1,96 @@
+import { useEffect, useRef } from "react";
 import { experience } from "../data/content";
-import { Section } from "./Section";
+import { gsap } from "../lib/gsap";
+import { useReducedMotion } from "../hooks/useMotionPrefs";
+import { AnimatedText } from "./AnimatedText";
 
+/**
+ * Experience as a two-column editorial layout: the role and period stick to the
+ * top of the viewport while its bullet list scrolls past, so the reader always
+ * knows which job the detail belongs to.
+ *
+ * Sticky positioning does the pinning here rather than ScrollTrigger — it is
+ * cheaper, survives resize for free, and degrades to normal flow on narrow
+ * screens without any extra branching.
+ */
 export function Experience() {
+  const root = useRef<HTMLElement>(null);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    if (reduced) return;
+    const rootEl = root.current;
+    if (!rootEl) return;
+
+    const ctx = gsap.context(() => {
+      gsap.utils.toArray<HTMLElement>(".exp-item").forEach((item) => {
+        gsap.from(item.querySelectorAll(".exp-point"), {
+          autoAlpha: 0,
+          y: 22,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.07,
+          scrollTrigger: { trigger: item, start: "top 78%", once: true },
+        });
+        gsap.from(item.querySelector(".exp-rule"), {
+          scaleX: 0,
+          duration: 1.1,
+          ease: "power3.out",
+          scrollTrigger: { trigger: item, start: "top 85%", once: true },
+        });
+      });
+    }, root);
+
+    return () => ctx.revert();
+  }, [reduced]);
+
   return (
-    <Section id="experience" eyebrow="Experience" title="Where I've worked">
-      <ol className="relative space-y-10 border-l border-border pl-6 sm:pl-8">
-        {experience.map((job) => (
-          <li key={`${job.company}-${job.period}`} className="relative">
-            {/* Timeline marker */}
-            <span
-              aria-hidden="true"
-              className={`absolute -left-[calc(1.5rem+4.5px)] top-2 h-2 w-2 rounded-full sm:-left-[calc(2rem+4.5px)] ${
-                job.current ? "bg-accent ring-4 ring-accent-wash" : "bg-border"
-              }`}
-            />
+    <section ref={root} id="experience" className="hairline scroll-mt-24">
+      <div className="shell py-20 sm:py-28">
+        <p className="type-label mb-5">Career</p>
+        <AnimatedText as="h2" className="type-h2 mb-16 max-w-3xl">
+          Where I have worked
+        </AnimatedText>
 
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
-              <h3 className="text-lg font-semibold text-text">
-                {job.role}
-                {job.current && (
-                  <span className="ml-2 rounded-full bg-accent-wash px-2 py-0.5 align-middle font-mono text-[10px] uppercase tracking-wider text-accent">
-                    Current
-                  </span>
-                )}
-              </h3>
-              <p className="shrink-0 font-mono text-xs text-text-faint">{job.period}</p>
-            </div>
+        <div className="space-y-20 sm:space-y-28">
+          {experience.map((job) => (
+            <article key={`${job.company}-${job.period}`} className="exp-item">
+              <div className="exp-rule mb-10 h-px w-full origin-left bg-border" />
 
-            <p className="mt-1 text-sm text-text-muted">
-              {job.company} · {job.location}
-            </p>
+              <div className="grid gap-8 lg:grid-cols-12 lg:gap-10">
+                <header className="lg:col-span-5 lg:sticky lg:top-28 lg:self-start">
+                  <p className="type-label mb-4">{job.period}</p>
+                  <h3 className="type-h3 text-text">
+                    {job.role}
+                    {job.current && (
+                      <span className="ml-3 inline-block translate-y-[-4px] rounded-full bg-accent px-2.5 py-1 align-middle font-mono text-[10px] uppercase tracking-widest text-bg">
+                        Now
+                      </span>
+                    )}
+                  </h3>
+                  <p className="mt-3 text-sm text-text-muted">
+                    {job.company} · {job.location}
+                  </p>
+                </header>
 
-            <ul className="mt-4 space-y-2.5">
-              {job.points.map((point) => (
-                <li key={point} className="flex gap-3 text-sm leading-relaxed text-text-muted">
-                  <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" />
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ol>
-    </Section>
+                <ul className="space-y-5 lg:col-span-7">
+                  {job.points.map((point) => (
+                    <li key={point} className="exp-point flex gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="mt-2.5 h-px w-5 shrink-0 bg-accent"
+                      />
+                      <span className="text-sm leading-relaxed text-text-muted sm:text-base">
+                        {point}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

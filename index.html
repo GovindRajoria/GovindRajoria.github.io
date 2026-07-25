@@ -12,8 +12,11 @@
     />
     <meta name="author" content="Govind Kumar" />
     <link rel="canonical" href="https://govindrajoria.github.io/" />
-    <meta name="theme-color" content="#0d7f74" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#070b13" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#08080a" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- Portrait is the hero LCP element; start it early. -->
+    <link rel="preload" as="image" href="/portrait.webp" type="image/webp" fetchpriority="high" />
 
     <!-- Open Graph / social previews -->
     <meta property="og:type" content="website" />
@@ -59,25 +62,10 @@
       }
     </script>
 
-    <!--
-      Apply the stored or system theme before first paint so the page never
-      flashes the wrong background. Mirrors the logic in useTheme.
-    -->
-    <script>
-      (function () {
-        try {
-          var stored = localStorage.getItem("theme");
-          var dark =
-            stored === "dark" ||
-            (stored !== "light" &&
-              window.matchMedia("(prefers-color-scheme: dark)").matches);
-          if (dark) document.documentElement.classList.add("dark");
-          document.documentElement.style.colorScheme = dark ? "dark" : "light";
-        } catch (e) {}
-      })();
-    </script>
   </head>
-  <body>
+  <!-- Background set on the element itself so the very first paint is already
+       dark, before any CSS has parsed. -->
+  <body style="background: #08080a">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

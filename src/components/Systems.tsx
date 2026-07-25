@@ -1,127 +1,155 @@
-import { useId, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { systems } from "../data/content";
-import { Section } from "./Section";
+import { gsap, ScrollTrigger } from "../lib/gsap";
+import { useReducedMotion } from "../hooks/useMotionPrefs";
+import { AnimatedText } from "./AnimatedText";
 
 /**
- * Tabbed explainer for the four production systems. Implements the WAI-ARIA
- * tabs pattern: arrow keys move between tabs, Home/End jump to the ends, and
- * only the active tab is in the focus order.
+ * The four production systems, presented as a horizontally-scrolled track that
+ * the page pins while it advances.
+ *
+ * Implementation notes worth keeping:
+ *  - `end` is a function so the scroll distance is recomputed on refresh;
+ *    with a fixed value the track desyncs from the pin after a resize.
+ *  - `invalidateOnRefresh` forces the x target to be re-read too.
+ *  - Pinning is gated behind a desktop matchMedia. On narrow screens the panels
+ *    simply stack, because a pinned horizontal track on a phone fights the
+ *    browser's own scroll and feels broken.
  */
 export function Systems() {
-  const [active, setActive] = useState(0);
-  const baseId = useId();
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const root = useRef<HTMLDivElement>(null);
 
-  const focusTab = (index: number) => {
-    const next = (index + systems.length) % systems.length;
-    setActive(next);
-    tabRefs.current[next]?.focus();
-  };
+  const reduced = useReducedMotion();
 
-  const onKeyDown = (event: React.KeyboardEvent) => {
-    switch (event.key) {
-      case "ArrowRight":
-      case "ArrowDown":
-        event.preventDefault();
-        focusTab(active + 1);
-        break;
-      case "ArrowLeft":
-      case "ArrowUp":
-        event.preventDefault();
-        focusTab(active - 1);
-        break;
-      case "Home":
-        event.preventDefault();
-        focusTab(0);
-        break;
-      case "End":
-        event.preventDefault();
-        focusTab(systems.length - 1);
-        break;
-    }
-  };
+  useEffect(() => {
+    if (reduced) return;
+    const rootEl = root.current;
+    if (!rootEl) return;
 
-  const current = systems[active];
+    const mm = gsap.matchMedia();
+
+    mm.add("(min-width: 1024px)", () => {
+      const track = rootEl.querySelector<HTMLElement>(".systems-track");
+      const pinArea = rootEl.querySelector<HTMLElement>(".systems-pin");
+      if (!track || !pinArea) return;
+
+      const distance = () => track.scrollWidth - pinArea.clientWidth;
+
+      const tween = gsap.to(track, {
+        x: () => -distance(),
+        ease: "none",
+        scrollTrigger: {
+          trigger: pinArea,
+          start: "top top",
+          end: () => `+=${distance()}`,
+          pin: true,
+          scrub: 1,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      // Each panel lifts slightly as it reaches the centre of the viewport.
+      const panels = gsap.utils.toArray<HTMLElement>(".systems-panel");
+      panels.forEach((panel) => {
+        gsap.fromTo(
+          panel.querySelector(".systems-panel-inner"),
+          { y: 34, autoAlpha: 0.35 },
+          {
+            y: 0,
+            autoAlpha: 1,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: panel,
+              containerAnimation: tween,
+              start: "left 88%",
+              end: "left 45%",
+              scrub: true,
+            },
+          },
+        );
+      });
+
+      // Progress meter tracks how far through the track we are.
+      gsap.fromTo(
+        ".systems-progress",
+        { scaleX: 0 },
+        {
+          scaleX: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: pinArea,
+            start: "top top",
+            end: () => `+=${distance()}`,
+            scrub: true,
+          },
+        },
+      );
+
+      return () => {
+        tween.scrollTrigger?.kill();
+        tween.kill();
+      };
+    });
+
+    // Fonts landing late changes measured widths; recompute once they settle.
+    document.fonts.ready.then(() => ScrollTrigger.refresh());
+
+    return () => mm.revert();
+  }, [reduced]);
 
   return (
-    <Section
-      id="systems"
-      eyebrow="Domain"
-      title="Computer vision for traffic management"
-      subtle
-    >
-      <p className="mb-10 max-w-3xl text-base leading-relaxed text-text-muted">
-        Intelligent Transportation Systems run on cameras mounted over live highways and toll
-        plazas. The models behind them execute on roadside edge hardware with a fixed frame
-        budget, no operator watching, and no second chance at a vehicle that has already passed.
-        These are the four systems I work on, described for anyone who does not spend their day
-        in this domain.
-      </p>
+    <div ref={root} id="systems" className="hairline scroll-mt-24 bg-bg-raise">
+      <div className="shell py-20 sm:py-28">
+        <p className="type-label mb-5">Domain expertise</p>
+        <AnimatedText as="h2" className="type-h2 max-w-4xl">
+          Computer vision for traffic management
+        </AnimatedText>
+        <AnimatedText as="p" className="type-lead mt-8 max-w-3xl">
+          Intelligent Transportation Systems run on cameras mounted over live highways and toll
+          plazas. The models behind them execute on roadside edge hardware with a fixed frame
+          budget, no operator watching, and no second chance at a vehicle that has already passed.
+        </AnimatedText>
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,240px)_1fr]">
-        <div
-          role="tablist"
-          aria-label="Traffic management systems"
-          aria-orientation="vertical"
-          onKeyDown={onKeyDown}
-          className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0"
-        >
-          {systems.map((system, index) => {
-            const selected = index === active;
-            return (
-              <button
-                key={system.abbr}
-                ref={(node) => {
-                  tabRefs.current[index] = node;
-                }}
-                type="button"
-                role="tab"
-                id={`${baseId}-tab-${index}`}
-                aria-selected={selected}
-                aria-controls={`${baseId}-panel-${index}`}
-                tabIndex={selected ? 0 : -1}
-                onClick={() => setActive(index)}
-                className={`shrink-0 rounded-lg border px-4 py-3 text-left transition-all lg:w-full ${
-                  selected
-                    ? "border-accent bg-accent-wash"
-                    : "border-border bg-surface hover:border-accent/50 hover:bg-accent-wash/40"
-                }`}
-              >
-                <span
-                  className={`block font-mono text-sm font-semibold ${
-                    selected ? "text-accent" : "text-text"
-                  }`}
-                >
-                  {system.abbr}
-                </span>
-                <span className="mt-0.5 hidden text-xs leading-snug text-text-faint lg:block">
-                  {system.name}
-                </span>
-              </button>
-            );
-          })}
+      {/* Pinned viewport: the track slides horizontally inside it. */}
+      <div className="systems-pin relative lg:h-screen lg:overflow-hidden">
+        <div className="systems-track flex flex-col gap-6 px-6 pb-20 lg:h-full lg:flex-row lg:items-center lg:gap-0 lg:px-0 lg:pb-0">
+          {systems.map((system, index) => (
+            <article
+              key={system.abbr}
+              className="systems-panel w-full shrink-0 lg:w-[min(46rem,78vw)] lg:px-8"
+            >
+              <div className="systems-panel-inner rounded-xl border border-border bg-surface p-8 sm:p-12">
+                <div className="flex items-baseline justify-between gap-4">
+                  <span className="font-mono text-6xl font-medium leading-none text-accent sm:text-8xl">
+                    {system.abbr}
+                  </span>
+                  <span className="type-label">
+                    {String(index + 1).padStart(2, "0")} / {String(systems.length).padStart(2, "0")}
+                  </span>
+                </div>
+
+                <h3 className="type-h3 mt-8 text-text">{system.name}</h3>
+
+                <p className="mt-5 max-w-2xl text-base leading-relaxed text-text-muted">
+                  {system.description}
+                </p>
+              </div>
+            </article>
+          ))}
         </div>
 
-        <div
-          role="tabpanel"
-          id={`${baseId}-panel-${active}`}
-          aria-labelledby={`${baseId}-tab-${active}`}
-          tabIndex={0}
-          className="rounded-xl border border-border bg-surface p-6 sm:p-8"
-          style={{ boxShadow: "var(--shadow)" }}
-        >
-          {/* key forces a remount so the fade replays on every tab change. */}
-          <div key={active} className="animate-[fadeIn_0.35s_ease-out]">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
-              {current.abbr}
-            </p>
-            <h3 className="mt-2 text-xl font-semibold text-text">{current.name}</h3>
-            <p className="mt-4 text-sm leading-relaxed text-text-muted sm:text-base">
-              {current.description}
-            </p>
+        {/* Progress meter, desktop only — it tracks the pinned scroll. */}
+        <div className="absolute inset-x-0 bottom-10 hidden lg:block">
+          <div className="shell">
+            <div className="h-px w-full bg-border">
+              <div className="systems-progress h-px w-full origin-left bg-accent" />
+            </div>
+            <p className="type-label mt-4">Drag or scroll to advance</p>
           </div>
         </div>
       </div>
-    </Section>
+    </div>
   );
 }

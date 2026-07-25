@@ -1,111 +1,116 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { navLinks, profile } from "../data/content";
 import { useScrollSpy } from "../hooks/useScrollSpy";
-import { useTheme } from "../hooks/useTheme";
+import { gsap } from "../lib/gsap";
+import { useReducedMotion } from "../hooks/useMotionPrefs";
 
-function SunIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" />
-    </svg>
-  );
-}
-
-function MoonIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
-    </svg>
-  );
-}
-
-export function Nav() {
-  const { theme, toggle } = useTheme();
+export function Nav({ ready }: { ready: boolean }) {
+  const root = useRef<HTMLElement>(null);
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const sectionIds = useMemo(() => navLinks.map((link) => link.href.slice(1)), []);
   const activeId = useScrollSpy(sectionIds);
+  const reduced = useReducedMotion();
 
+  // Reveal the bar once the curtain has lifted.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
+    if (!ready || reduced) return;
+    gsap.from(root.current, { yPercent: -100, duration: 1, ease: "expo.out", delay: 0.15 });
+  }, [ready, reduced]);
+
+  // Hide on scroll down, show on scroll up — keeps the viewport clear while
+  // reading but puts navigation one flick away.
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - lastY) < 8) return;
+      setHidden(y > lastY && y > 220);
+      lastY = y;
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close the mobile menu on Escape.
   useEffect(() => {
     if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b transition-colors ${
-        scrolled ? "border-border bg-bg/85 backdrop-blur-md" : "border-transparent bg-bg"
-      }`}
+      ref={root}
+      className="fixed inset-x-0 top-0 z-[90] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+      style={{ transform: hidden && !open ? "translateY(-100%)" : "translateY(0)" }}
     >
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5 sm:px-8">
-        <a
-          href="#top"
-          className="font-mono text-sm font-semibold tracking-tight text-text transition-colors hover:text-accent"
-        >
-          {profile.name.split(" ")[0].toLowerCase()}
-          <span className="text-accent">.</span>
-          dev
-        </a>
+      <div className="border-b border-border/70 bg-bg/75 backdrop-blur-xl">
+        <div className="shell flex h-16 items-center justify-between gap-6 sm:h-18">
+          <a href="#top" className="group flex items-center gap-2.5">
+            <span
+              aria-hidden="true"
+              className="h-2 w-2 rounded-full bg-accent transition-transform duration-500 group-hover:scale-150"
+            />
+            <span className="font-mono text-sm tracking-tight text-text">
+              {profile.name.split(" ")[0].toLowerCase()}
+              <span className="text-accent">.</span>
+              dev
+            </span>
+          </a>
 
-        <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
-          {navLinks.map((link) => {
-            const active = activeId === link.href.slice(1);
-            return (
-              <a
-                key={link.href}
-                href={link.href}
-                aria-current={active ? "true" : undefined}
-                className={`relative rounded-md px-3 py-2 text-sm transition-colors ${
-                  active ? "text-accent" : "text-text-muted hover:bg-accent-wash hover:text-accent"
-                }`}
-              >
-                {link.label}
-                {active && (
+          <nav aria-label="Main" className="hidden items-center gap-0.5 md:flex">
+            {navLinks.map((link) => {
+              const active = activeId === link.href.slice(1);
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "true" : undefined}
+                  className={`relative px-4 py-2 font-mono text-xs uppercase tracking-widest transition-colors duration-300 ${
+                    active ? "text-accent" : "text-text-faint hover:text-text"
+                  }`}
+                >
+                  {link.label}
                   <span
                     aria-hidden="true"
-                    className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-accent"
+                    className={`absolute inset-x-4 bottom-1 h-px origin-left bg-accent transition-transform duration-500 ${
+                      active ? "scale-x-100" : "scale-x-0"
+                    }`}
                   />
-                )}
-              </a>
-            );
-          })}
-        </nav>
+                </a>
+              );
+            })}
+          </nav>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={toggle}
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-            className="rounded-md border border-border p-2 text-text-muted transition-colors hover:border-accent hover:text-accent"
-          >
-            {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setOpen((value) => !value)}
-            aria-expanded={open}
-            aria-controls="mobile-menu"
-            aria-label="Toggle navigation menu"
-            className="rounded-md border border-border p-2 text-text-muted transition-colors hover:border-accent hover:text-accent md:hidden"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-            </svg>
-          </button>
+          <div className="flex items-center gap-3">
+            <a
+              href="#contact"
+              className="hidden rounded-full border border-border-bright px-4 py-2 font-mono text-xs uppercase tracking-widest text-text transition-colors duration-300 hover:border-accent hover:text-accent md:inline-block"
+            >
+              Contact
+            </a>
+            <button
+              type="button"
+              onClick={() => setOpen((value) => !value)}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              aria-label="Toggle navigation menu"
+              className="rounded-full border border-border-bright p-2.5 text-text transition-colors duration-300 hover:border-accent hover:text-accent md:hidden"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              >
+                {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 8h16M4 16h16" />}
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -113,16 +118,20 @@ export function Nav() {
         <nav
           id="mobile-menu"
           aria-label="Main"
-          className="border-t border-border bg-bg md:hidden"
+          className="border-b border-border bg-bg/95 backdrop-blur-xl md:hidden"
         >
-          <ul className="mx-auto max-w-5xl px-5 py-2 sm:px-8">
-            {navLinks.map((link) => (
+          <ul className="shell py-4">
+            {navLinks.map((link, index) => (
               <li key={link.href}>
                 <a
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="block rounded-md px-2 py-3 text-sm text-text-muted transition-colors hover:text-accent"
+                  className="flex items-baseline gap-4 py-3 text-2xl text-text transition-colors hover:text-accent"
+                  style={{ fontFamily: "var(--font-display)" }}
                 >
+                  <span className="font-mono text-[10px] text-text-faint">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
                   {link.label}
                 </a>
               </li>

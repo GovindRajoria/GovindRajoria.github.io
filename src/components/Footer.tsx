@@ -2,18 +2,18 @@ import { profile } from "../data/content";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-bg">
-      <div className="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-8 text-xs text-text-faint sm:flex-row sm:items-center sm:justify-between sm:px-8">
-        <p>
-          © {new Date().getFullYear()} {profile.name}
+    <footer className="hairline">
+      <div className="shell flex flex-col gap-4 py-10 sm:flex-row sm:items-center sm:justify-between">
+        <p className="font-mono text-[11px] text-text-faint">
+          © {new Date().getFullYear()} {profile.name} · {profile.location}
         </p>
-        <p className="font-mono">
-          Built with React, Vite and TypeScript ·{" "}
+        <p className="font-mono text-[11px] text-text-faint">
+          React · GSAP · Lenis ·{" "}
           <a
             href={`${profile.github}/GovindRajoria.github.io`}
             target="_blank"
             rel="noreferrer noopener"
-            className="transition-colors hover:text-accent"
+            className="transition-colors duration-300 hover:text-accent"
           >
             source
           </a>
