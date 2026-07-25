@@ -128,15 +128,29 @@ export const skills: SkillGroup[] = [
   },
   {
     title: "Backend & web",
-    items: ["Node.js", "Express", "Flask (REST APIs)", "React", "Vite"],
+    items: ["FastAPI", "Flask (REST APIs)", "Node.js", "Express", "React", "Vite", "asyncio"],
+  },
+  {
+    title: "Agents & retrieval",
+    items: ["LangGraph", "Ollama", "ChromaDB", "Kùzu", "Cypher", "GraphRAG", "Vector search"],
   },
   {
     title: "Data",
     items: ["MySQL", "SQLite", "Drizzle ORM", "JSON configuration"],
   },
   {
-    title: "Systems",
-    items: ["Git", "Linux / Ubuntu", "Multi-threaded RTSP ingestion", "UDP protocols", "Edge hardware deployment"],
+    title: "Systems & tooling",
+    items: [
+      "Docker",
+      "Git",
+      "GitHub Actions CI",
+      "Linux / Ubuntu",
+      "pytest",
+      "Static analysis (Bandit, Semgrep)",
+      "Multi-threaded RTSP ingestion",
+      "UDP protocols",
+      "Edge hardware deployment",
+    ],
   },
 ];
 
@@ -149,6 +163,14 @@ export type Project = {
 };
 
 export const projects: Project[] = [
+  {
+    name: "pipeline-sentry",
+    blurb:
+      "Static analyser for ML and computer-vision codebases. Maps a Python repository into an embedded Cypher property graph and an AST-aligned vector index, then audits it with six rules written for the failure modes that break inference services — model paths that resolve against the working directory, unreleased camera handles, inference without no_grad(), torch.load without weights_only. Findings come from bandit, semgrep and pip-audit rather than from a model, because a deterministic scanner beats an 8B LLM at pattern matching. Fixtures ship in two halves, so precision is measured rather than claimed.",
+    stack: ["Python", "Kùzu", "ChromaDB", "asyncio", "AST", "pytest"],
+    repo: "https://github.com/GovindRajoria/pipeline-sentry",
+    highlight: "913 files/s · 0 false positives",
+  },
   {
     name: "FRIDAY",
     blurb:
