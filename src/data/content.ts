@@ -166,12 +166,12 @@ export const projects: Project[] = [
     highlight: "85% accuracy at 30 FPS",
   },
   {
-    name: "Face Recognition Attendance System",
+    name: "Face Recognition System",
     blurb:
-      "Replaces roll-call attendance with webcam face recognition, using Haar cascade detection and a KNN classifier over captured face embeddings, exposed through a Flask interface with timestamped logging.",
-    stack: ["Python", "OpenCV", "Flask", "scikit-learn"],
-    repo: "https://github.com/GovindRajoria/Face-Recognition-Based-Attendance-System",
-    highlight: "90% recognition accuracy",
+      "Real-time face recognition on CPU: Haar cascade detection to locate faces, LBPH to identify them. A three-stage pipeline — capture 120 grayscale crops per person, fit the recogniser, then run live inference with inverted-distance confidence and an unknown threshold rather than forcing every face to its nearest label. Chosen over a CNN embedding model precisely because it trains in seconds and runs without a GPU.",
+    stack: ["Python", "OpenCV", "LBPH", "Haar cascades", "NumPy"],
+    repo: "https://github.com/GovindRajoria/face-recognition-system",
+    highlight: "CPU-only, no GPU required",
   },
   {
     name: "E-Commerce Platform",
