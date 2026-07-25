@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <title>Govind Kumar — AI/ML Developer</title>
+    <meta
+      name="description"
+      content="AI/ML Developer at Metro Infrasys building edge-optimized computer vision systems for intelligent transportation — traffic classification, incident detection and number plate recognition."
+    />
+    <meta name="author" content="Govind Kumar" />
+    <link rel="canonical" href="https://govindrajoria.github.io/" />
+    <meta name="theme-color" content="#0d7f74" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#070b13" media="(prefers-color-scheme: dark)" />
+
+    <!-- Open Graph / social previews -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Govind Kumar" />
+    <meta property="og:title" content="Govind Kumar — AI/ML Developer" />
+    <meta
+      property="og:description"
+      content="Edge-optimized computer vision for intelligent transportation systems: ATCC, video incident detection, ANPR and automatic vehicle classification."
+    />
+    <meta property="og:url" content="https://govindrajoria.github.io/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Govind Kumar — AI/ML Developer" />
+    <meta
+      name="twitter:description"
+      content="Edge-optimized computer vision for intelligent transportation systems."
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Govind Kumar",
+        "jobTitle": "AI/ML Developer",
+        "worksFor": { "@type": "Organization", "name": "Metro Infrasys Private Limited" },
+        "url": "https://govindrajoria.github.io/",
+        "email": "mailto:govindrajoria97@gmail.com",
+        "address": { "@type": "PostalAddress", "addressLocality": "Delhi", "addressCountry": "IN" },
+        "alumniOf": {
+          "@type": "CollegeOrUniversity",
+          "name": "University School of Automation & Robotics, GGSIPU Delhi"
+        },
+        "knowsAbout": [
+          "Computer Vision",
+          "Edge AI",
+          "OpenVINO",
+          "YOLO",
+          "Intelligent Transportation Systems"
+        ],
+        "sameAs": [
+          "https://github.com/GovindRajoria",
+          "https://www.linkedin.com/in/govind-rajoria"
+        ]
+      }
+    </script>
+
+    <!--
+      Apply the stored or system theme before first paint so the page never
+      flashes the wrong background. Mirrors the logic in useTheme.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var dark =
+            stored === "dark" ||
+            (stored !== "light" &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
