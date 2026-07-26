@@ -136,7 +136,7 @@ export const skills: SkillGroup[] = [
   },
   {
     title: "Data",
-    items: ["MySQL", "SQLite", "Drizzle ORM", "JSON configuration"],
+    items: ["PostgreSQL", "MySQL", "SQLite", "Drizzle ORM", "JSON configuration"],
   },
   {
     title: "Systems & tooling",
@@ -146,7 +146,8 @@ export const skills: SkillGroup[] = [
       "GitHub Actions CI",
       "Linux / Ubuntu",
       "pytest",
-      "Static analysis (Bandit, Semgrep)",
+      "Vitest",
+      "Static analysis (Bandit, Semgrep, ruff)",
       "Multi-threaded RTSP ingestion",
       "UDP protocols",
       "Edge hardware deployment",
@@ -166,15 +167,15 @@ export const projects: Project[] = [
   {
     name: "pipeline-sentry",
     blurb:
-      "Static analyser for ML and computer-vision codebases. Maps a Python repository into an embedded Cypher property graph and an AST-aligned vector index, then audits it with six rules written for the failure modes that break inference services — model paths that resolve against the working directory, unreleased camera handles, inference without no_grad(), torch.load without weights_only. Findings come from bandit, semgrep and pip-audit rather than from a model, because a deterministic scanner beats an 8B LLM at pattern matching. Fixtures ship in two halves, so precision is measured rather than claimed.",
-    stack: ["Python", "Kùzu", "ChromaDB", "asyncio", "AST", "pytest"],
+      "Static analyser and triage system for ML and computer-vision codebases. Maps a Python repository into an embedded Cypher property graph and an AST-aligned vector index, then audits it with six rules written for the failure modes that break inference services — model paths that resolve against the working directory, unreleased camera handles, inference without no_grad(), torch.load without weights_only. Hybrid graph/vector retrieval feeds a LangGraph agent layer with human-in-the-loop review, served over FastAPI and shipped as a container CI builds on every push. Findings come from bandit, semgrep and pip-audit rather than from a model. Then the interesting part: the eval harness measured what the triage layer actually adds, and on a local 8B model it makes the output worse — it dismissed a torch.load arbitrary-code-execution finding as a false positive. That result is published at the top of the README rather than buried, because a security tool whose evaluation you cannot trust is worth nothing.",
+    stack: ["Python", "LangGraph", "Kùzu", "ChromaDB", "FastAPI", "Docker", "pytest"],
     repo: "https://github.com/GovindRajoria/pipeline-sentry",
-    highlight: "913 files/s · 0 false positives",
+    highlight: "11/11 defects · negative eval published",
   },
   {
     name: "FRIDAY",
     blurb:
-      "A voice-driven desktop assistant that runs entirely on local hardware. Implements a ReAct reasoning loop over a local Llama 3.1, so it chains multiple tools to satisfy one request — searching, computing, drafting, then committing findings to a memory vault. Skills are auto-discovered from the filesystem and registered by manifest, so adding a capability means adding a file.",
+      "A voice-driven desktop assistant that runs entirely on local hardware. Implements a ReAct reasoning loop over a local Llama 3.1, so it chains multiple tools to satisfy one request — searching, computing, drafting, then committing findings to a memory vault. Every response is truncated at the PAUSE token, which physically discards the observations the model tries to invent rather than rejecting the whole turn and paying for another generation. Skills are auto-discovered from the filesystem and registered by manifest, so adding a capability means adding a file — and because that registry is keyed by name, CI validates that no two skills claim the same one, reading the manifests with ast so the check needs none of the runtime dependencies.",
     stack: ["Python", "Ollama", "faster-whisper", "YOLO11", "OpenVINO", "SQLite"],
     repo: "https://github.com/GovindRajoria/friday-assistant",
     highlight: "Local-first, no cloud inference",
@@ -182,25 +183,26 @@ export const projects: Project[] = [
   {
     name: "Real-Time Object Detection (Android)",
     blurb:
-      "On-device multi-object detection running SSD MobileNet V1 against a live Camera2 stream through TFLite Model Binding, with bounding boxes composited over the preview. CPU-only by design — no GPU delegate — to establish what is achievable inside a mid-range phone's compute budget. Reference implementation for the IJSREM publication.",
+      "On-device multi-object detection running SSD MobileNet V1 against a live Camera2 stream through TFLite Model Binding, with bounding boxes composited over the preview. Model Binding rather than hand-allocated ByteBuffers, because the location tensor is a flat array in top/left/bottom/right order and getting that wrong yields boxes that are plausibly placed and systematically wrong — a compile error is a better failure than a subtly rotated rectangle. CPU-only by design — no GPU delegate — to establish what is achievable inside a mid-range phone's compute budget. Reference implementation for the IJSREM publication; the accuracy and throughput figures are the paper's, measured under the evaluation setup it describes.",
     stack: ["Kotlin", "TensorFlow Lite", "Camera2", "SSD MobileNet"],
     repo: "https://github.com/GovindRajoria/Real-Time-Object-Detection-Android-Application",
-    highlight: "85% accuracy at 30 FPS",
+    highlight: "85% at 30 FPS · published",
   },
   {
     name: "Face Recognition System",
     blurb:
-      "Real-time face recognition on CPU: Haar cascade detection to locate faces, LBPH to identify them. A three-stage pipeline — capture 120 grayscale crops per person, fit the recogniser, then run live inference with inverted-distance confidence and an unknown threshold rather than forcing every face to its nearest label. Chosen over a CNN embedding model precisely because it trains in seconds and runs without a GPU.",
+      "Real-time face recognition on CPU: Haar cascade detection to locate faces, LBPH to identify them. A three-stage pipeline — capture 120 grayscale crops per person, fit the recogniser, then run live inference with inverted-distance confidence and an unknown threshold rather than forcing every face to its nearest label. LBPH over a CNN embedding model because enrolment is a sub-second retrain and the whole supply chain is one pip install. The committed benchmark also shows where that stops being true: prediction goes from 4.2 ms to 15.9 ms per face between one enrolled person and ten, because LBPH compares against every stored histogram. The reason to move to embeddings is that cost curve, not accuracy.",
     stack: ["Python", "OpenCV", "LBPH", "Haar cascades", "NumPy"],
     repo: "https://github.com/GovindRajoria/face-recognition-system",
-    highlight: "CPU-only, no GPU required",
+    highlight: "4.2 ms/face · CPU only",
   },
   {
     name: "E-Commerce Platform",
     blurb:
-      "Full-stack storefront with product catalogue, cart and authentication. React and TypeScript on the front end, Express with Drizzle ORM behind it, and a shared schema module keeping client and server types in agreement.",
-    stack: ["React", "TypeScript", "Node.js", "Express", "Drizzle ORM"],
+      "Full-stack storefront with product catalogue, cart, wishlist and orders. React and TypeScript on the front end, Express with Drizzle ORM behind it, and a shared schema module keeping client and server types in agreement. The substantive work was the authentication layer: it was bound to a hosted OIDC provider by a module-scope throw, which meant a clone could not start at all — not merely could not sign in, since the public catalogue sat behind the same import. Replaced with email and password over bcrypt on the session store the schema already defined, keeping the OIDC strategy behind an environment flag. The details that matter are the ones a tutorial skips: a null password hash rejects rather than opening every externally-created account, the session id regenerates on sign-in, and a failed login reveals nothing about which addresses exist.",
+    stack: ["React", "TypeScript", "Express", "Drizzle ORM", "PostgreSQL", "Vitest"],
     repo: "https://github.com/GovindRajoria/E-Commerce",
+    highlight: "Unbound from a hosted auth provider",
   },
 ];
 
