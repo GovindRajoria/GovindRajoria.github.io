@@ -29,16 +29,20 @@ export function Nav({ ready }: { ready: boolean }) {
     const el = progress.current;
     if (!el) return;
 
-    const tween = gsap.to(el, {
-      scaleX: 1,
-      ease: "none",
-      scrollTrigger: {
-        start: 0,
-        end: "max",
-        scrub: reduced ? true : 0.3,
-        invalidateOnRefresh: true,
+    const tween = gsap.fromTo(
+      el,
+      { scaleX: 0 },
+      {
+        scaleX: 1,
+        ease: "none",
+        scrollTrigger: {
+          start: 0,
+          end: "max",
+          scrub: reduced ? true : 0.3,
+          invalidateOnRefresh: true,
+        },
       },
-    });
+    );
 
     return () => {
       tween.scrollTrigger?.kill();
@@ -74,7 +78,7 @@ export function Nav({ ready }: { ready: boolean }) {
           progress is advancing. */}
       <div
         aria-hidden="true"
-        className="fixed inset-x-0 top-0 z-[91] h-px bg-border/60"
+        className="pointer-events-none fixed inset-x-0 top-0 z-[91] h-px bg-border/60"
       >
         <div ref={progress} className="nav-progress h-px w-full bg-accent" />
       </div>

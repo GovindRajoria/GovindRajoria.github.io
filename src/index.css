@@ -466,9 +466,10 @@
 
 .nav-progress {
   transform-origin: left center;
-  /* Rests at zero; ScrollTrigger drives it from there. Declared here rather
-     than as a utility so the bar is never briefly full on first paint. */
-  transform: scaleX(0);
+  /* No resting transform here on purpose. A CSS scaleX(0) decomposes to a
+     degenerate matrix, and GSAP would have to read its start value back out of
+     that; the tween declares its own from-state instead, the way the pinned
+     track's meter in Systems does. */
 }
 
 /* ---------- Marquee ---------- */
