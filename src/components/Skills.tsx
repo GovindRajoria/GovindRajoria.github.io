@@ -124,7 +124,7 @@ export function Skills() {
           </div>
 
           <p className="type-label whitespace-nowrap">
-            <span className="text-accent">{total}</span> / {skills.length} groups
+            <span className="text-accent">{total}</span> tools · {skills.length} groups
           </p>
         </div>
 
@@ -133,7 +133,7 @@ export function Skills() {
             <article
               key={group.title}
               onPointerMove={onCardMove}
-              className={`skill-card hud-card group relative overflow-hidden rounded-xl border border-border bg-surface p-6 sm:p-7 ${
+              className={`skill-card hud-card group relative rounded-xl border border-border bg-surface p-6 sm:p-7 ${
                 SPANS[index] ?? FALLBACK_SPAN
               }`}
             >
@@ -162,11 +162,15 @@ export function Skills() {
                   </p>
                 )}
 
+                {/* The chip lift transitions `translate`, not `transform`:
+                    that is the property Tailwind emits for -translate-y, and
+                    it stays clear of the transform GSAP writes during the
+                    reveal. */}
                 <ul className="mt-5 flex flex-wrap gap-2">
                   {group.items.map((item) => (
                     <li
                       key={item}
-                      className="skill-chip rounded-full border border-border bg-bg-raise px-3 py-1.5 font-mono text-[11px] text-text-muted transition-[transform,border-color,color,background-color] duration-300 hover:-translate-y-0.5 hover:border-accent hover:bg-accent-wash hover:text-accent"
+                      className="skill-chip rounded-full border border-border bg-bg-raise px-3 py-1.5 font-mono text-[11px] text-text-muted transition-[translate,border-color,color,background-color] duration-300 hover:-translate-y-0.5 hover:border-accent hover:bg-accent-wash hover:text-accent"
                     >
                       {item}
                     </li>

@@ -113,8 +113,9 @@ export function Portrait({ className = "" }: { className?: string }) {
               width={800}
               height={1000}
               loading="eager"
-              // @ts-expect-error fetchPriority is valid HTML, typing lags behind
-              fetchpriority="high"
+              // React expects the camelCase spelling and warns on the lowercase
+              // one, which meant the hint was dropped rather than applied.
+              fetchPriority="high"
               className="portrait-img"
             />
           </picture>

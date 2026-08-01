@@ -324,16 +324,23 @@
   wash centred on the point of interest — so the section reads as part of the
   same surface rather than as a generic card grid.
 */
+/*
+  The hover lift uses the standalone `translate` property, not `transform`.
+  GSAP writes `transform` inline on every frame of the reveal, and a transition
+  on that same property would ease each of those frames in turn — the entrance
+  arrives damped instead of on its own curve. `translate` composes with
+  `transform` rather than replacing it, so the two never meet.
+*/
 .hud-card {
   transition: border-color 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    translate 0.45s cubic-bezier(0.16, 1, 0.3, 1),
     background-color 0.45s ease;
 }
 
 .hud-card:hover,
 .hud-card:focus-within {
   border-color: var(--border-bright);
-  transform: translateY(-3px);
+  translate: 0 -3px;
 }
 
 /* Accent wash tracking the pointer. --mx/--my are written by the component;
@@ -343,6 +350,9 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
+  /* Rounds itself to the card instead of relying on overflow:hidden, which
+     would clip the corner brackets sitting just outside the padding box. */
+  border-radius: inherit;
   opacity: 0;
   transition: opacity 0.45s ease;
   background: radial-gradient(
