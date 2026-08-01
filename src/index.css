@@ -316,6 +316,151 @@
   }
 }
 
+/* ---------- Detection-HUD card ---------- */
+
+/*
+  The card treatment used by the skills grid. It borrows the vocabulary the
+  hero canvas already draws in — corner brackets closing around a subject, a
+  wash centred on the point of interest — so the section reads as part of the
+  same surface rather than as a generic card grid.
+*/
+.hud-card {
+  transition: border-color 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.45s ease;
+}
+
+.hud-card:hover,
+.hud-card:focus-within {
+  border-color: var(--border-bright);
+  transform: translateY(-3px);
+}
+
+/* Accent wash tracking the pointer. --mx/--my are written by the component;
+   the fallback keeps the gradient centred before the first pointermove and on
+   touch devices, where it never updates. */
+.hud-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  background: radial-gradient(
+    16rem circle at var(--mx, 50%) var(--my, 0%),
+    var(--accent-wash),
+    transparent 70%
+  );
+}
+
+.hud-card:hover .hud-glow,
+.hud-card:focus-within .hud-glow {
+  opacity: 1;
+}
+
+/* Four corner brackets. Two come from the card's own pseudo-elements, two from
+   the .hud-corners child — cheaper than four positioned spans, and the arms
+   grow on hover the way a tracker's box closes on a subject. */
+.hud-card::before,
+.hud-card::after,
+.hud-corners::before,
+.hud-corners::after {
+  content: "";
+  position: absolute;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-color: var(--accent);
+  border-style: solid;
+  border-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease, width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hud-card::before {
+  top: -1px;
+  left: -1px;
+  border-top-width: 1.5px;
+  border-left-width: 1.5px;
+  border-top-left-radius: 0.75rem;
+}
+
+.hud-card::after {
+  right: -1px;
+  bottom: -1px;
+  border-right-width: 1.5px;
+  border-bottom-width: 1.5px;
+  border-bottom-right-radius: 0.75rem;
+}
+
+.hud-corners::before {
+  top: -1px;
+  right: -1px;
+  border-top-width: 1.5px;
+  border-right-width: 1.5px;
+  border-top-right-radius: 0.75rem;
+}
+
+.hud-corners::after {
+  bottom: -1px;
+  left: -1px;
+  border-bottom-width: 1.5px;
+  border-left-width: 1.5px;
+  border-bottom-left-radius: 0.75rem;
+}
+
+.hud-card:hover::before,
+.hud-card:hover::after,
+.hud-card:focus-within::before,
+.hud-card:focus-within::after,
+.hud-card:hover .hud-corners::before,
+.hud-card:hover .hud-corners::after,
+.hud-card:focus-within .hud-corners::before,
+.hud-card:focus-within .hud-corners::after {
+  opacity: 1;
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* ---------- Skills backdrop ---------- */
+
+.skills-aura {
+  position: absolute;
+  inset-inline: 0;
+  top: -10%;
+  height: 70%;
+  pointer-events: none;
+  background: radial-gradient(
+    55% 55% at 50% 0%,
+    rgba(200, 250, 75, 0.07),
+    transparent 70%
+  );
+}
+
+.skills-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image: radial-gradient(var(--border-bright) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(
+    70% 60% at 50% 35%,
+    black,
+    transparent 78%
+  );
+  mask-image: radial-gradient(70% 60% at 50% 35%, black, transparent 78%);
+}
+
+/* ---------- Scroll progress ---------- */
+
+.nav-progress {
+  transform-origin: left center;
+  /* Rests at zero; ScrollTrigger drives it from there. Declared here rather
+     than as a utility so the bar is never briefly full on first paint. */
+  transform: scaleX(0);
+}
+
 /* ---------- Marquee ---------- */
 
 .marquee-track {

@@ -1,9 +1,15 @@
+import { useRef } from "react";
 import { profile } from "../data/content";
+import { useMagnetic } from "../hooks/useMagnetic";
 import { AnimatedText } from "./AnimatedText";
 
 export function Contact() {
+  const root = useRef<HTMLElement>(null);
+
+  useMagnetic(root, "[data-magnetic]");
+
   return (
-    <section id="contact" className="hairline scroll-mt-24 bg-bg-raise">
+    <section ref={root} id="contact" className="hairline scroll-mt-24 bg-bg-raise">
       <div className="shell py-24 sm:py-36">
         <p className="type-label mb-8">Contact</p>
 
@@ -20,6 +26,7 @@ export function Contact() {
         <div className="mt-14 flex flex-wrap items-center gap-4">
           <a
             href={`mailto:${profile.email}`}
+            data-magnetic
             className="group relative overflow-hidden rounded-full bg-accent px-7 py-4 text-sm font-medium text-bg"
           >
             <span className="relative z-10">{profile.email}</span>
@@ -29,6 +36,7 @@ export function Contact() {
             href={profile.github}
             target="_blank"
             rel="noreferrer noopener"
+            data-magnetic
             className="rounded-full border border-border-bright px-7 py-4 text-sm font-medium text-text transition-colors duration-300 hover:border-accent hover:text-accent"
           >
             @{profile.githubHandle}
@@ -38,6 +46,7 @@ export function Contact() {
               href={profile.linkedin}
               target="_blank"
               rel="noreferrer noopener"
+              data-magnetic
               className="rounded-full border border-border-bright px-7 py-4 text-sm font-medium text-text transition-colors duration-300 hover:border-accent hover:text-accent"
             >
               LinkedIn

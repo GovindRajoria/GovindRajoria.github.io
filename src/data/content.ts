@@ -110,36 +110,46 @@ export const systems: System[] = [
 
 export type SkillGroup = {
   title: string;
+  /** One line on what the group is actually used for — keeps the card from
+   *  being a bare word list. Descriptive only: no self-assessed ratings. */
+  note?: string;
   items: string[];
 };
 
 export const skills: SkillGroup[] = [
   {
     title: "Languages",
+    note: "Python carries the pipelines and the services; the others follow whatever the deployment target is.",
     items: ["Python", "C++", "TypeScript / JavaScript", "Kotlin", "SQL"],
   },
   {
     title: "Machine learning & vision",
+    note: "Detection and classification networks, trained and then measured against precision-recall targets rather than eyeballed.",
     items: ["PyTorch", "TensorFlow", "TensorFlow Lite", "OpenCV", "YOLO (v8 / v11)", "SSD MobileNet", "scikit-learn", "NumPy", "Pandas"],
   },
   {
     title: "Edge optimization",
+    note: "Fitting a trained model into a roadside device's frame budget without giving away the accuracy that justified it.",
     items: ["OpenVINO", "TensorRT", "Quantization", "Pruning", "IR export & benchmarking", "Model evaluation (F1, AUC-ROC)"],
   },
   {
     title: "Backend & web",
+    note: "Getting inference output off the edge and into dashboards operators actually watch.",
     items: ["FastAPI", "Flask (REST APIs)", "Node.js", "Express", "React", "Vite", "asyncio"],
   },
   {
     title: "Agents & retrieval",
+    note: "Local-first agent and retrieval work — from the side projects rather than the day job.",
     items: ["LangGraph", "Ollama", "ChromaDB", "Kùzu", "Cypher", "GraphRAG", "Vector search"],
   },
   {
     title: "Data",
+    note: "Schemas, indexing and the query paths that decide whether a dashboard feels instant.",
     items: ["PostgreSQL", "MySQL", "SQLite", "Drizzle ORM", "JSON configuration"],
   },
   {
     title: "Systems & tooling",
+    note: "The unglamorous half: stream ingestion, containers, CI, and the checks that catch a regression before a site visit does.",
     items: [
       "Docker",
       "Git",

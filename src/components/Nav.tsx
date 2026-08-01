@@ -2,21 +2,49 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { navLinks, profile } from "../data/content";
 import { useScrollSpy } from "../hooks/useScrollSpy";
 import { gsap } from "../lib/gsap";
+import { useMagnetic } from "../hooks/useMagnetic";
 import { useReducedMotion } from "../hooks/useMotionPrefs";
 
 export function Nav({ ready }: { ready: boolean }) {
   const root = useRef<HTMLElement>(null);
+  const progress = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const sectionIds = useMemo(() => navLinks.map((link) => link.href.slice(1)), []);
   const activeId = useScrollSpy(sectionIds);
   const reduced = useReducedMotion();
 
+  useMagnetic(root, "[data-magnetic]", 0.22);
+
   // Reveal the bar once the curtain has lifted.
   useEffect(() => {
     if (!ready || reduced) return;
     gsap.from(root.current, { yPercent: -100, duration: 1, ease: "expo.out", delay: 0.15 });
   }, [ready, reduced]);
+
+  // Read-through meter along the bottom edge of the bar. Scrubbed against the
+  // document rather than any one section, and kept on under reduced motion —
+  // it reports position, it is not decoration — but without the easing lag.
+  useEffect(() => {
+    const el = progress.current;
+    if (!el) return;
+
+    const tween = gsap.to(el, {
+      scaleX: 1,
+      ease: "none",
+      scrollTrigger: {
+        start: 0,
+        end: "max",
+        scrub: reduced ? true : 0.3,
+        invalidateOnRefresh: true,
+      },
+    });
+
+    return () => {
+      tween.scrollTrigger?.kill();
+      tween.kill();
+    };
+  }, [reduced]);
 
   // Hide on scroll down, show on scroll up — keeps the viewport clear while
   // reading but puts navigation one flick away.
@@ -86,6 +114,7 @@ export function Nav({ ready }: { ready: boolean }) {
           <div className="flex items-center gap-3">
             <a
               href="#contact"
+              data-magnetic
               className="hidden rounded-full border border-border-bright px-4 py-2 font-mono text-xs uppercase tracking-widest text-text transition-colors duration-300 hover:border-accent hover:text-accent md:inline-block"
             >
               Contact
@@ -111,6 +140,10 @@ export function Nav({ ready }: { ready: boolean }) {
               </svg>
             </button>
           </div>
+        </div>
+
+        <div aria-hidden="true" className="h-px w-full bg-border/60">
+          <div ref={progress} className="nav-progress h-px w-full bg-accent" />
         </div>
       </div>
 

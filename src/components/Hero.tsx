@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { profile } from "../data/content";
 import { EXPO, gsap } from "../lib/gsap";
+import { useMagnetic } from "../hooks/useMagnetic";
 import { useReducedMotion } from "../hooks/useMotionPrefs";
 import { AnimatedText } from "./AnimatedText";
 import { DetectionCanvas } from "./DetectionCanvas";
@@ -11,6 +12,8 @@ const BASE = import.meta.env.BASE_URL;
 export function Hero({ ready }: { ready: boolean }) {
   const root = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
+
+  useMagnetic(root, ".hero-cta");
 
   useEffect(() => {
     if (!ready || reduced) return;
@@ -25,7 +28,10 @@ export function Hero({ ready }: { ready: boolean }) {
           { autoAlpha: 0, y: 40, scale: 0.97, duration: 1.3 },
           0.25,
         )
-        .from(".hero-cta", { autoAlpha: 0, y: 18, duration: 0.8, stagger: 0.08 }, 0.7)
+        // yPercent, not y: the magnetic pull writes x/y on these same buttons,
+        // and keeping the intro on a different transform component means the
+        // two never overwrite each other if the pointer arrives mid-reveal.
+        .from(".hero-cta", { autoAlpha: 0, yPercent: 40, duration: 0.8, stagger: 0.08 }, 0.7)
         .from(".hero-scroll", { autoAlpha: 0, duration: 0.6 }, 1);
 
       // Parallax: the portrait drifts slower than the page, the type faster.
