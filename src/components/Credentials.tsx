@@ -29,7 +29,9 @@ export function Credentials() {
               <p className="mt-5 text-sm leading-relaxed text-text-muted">{publication.abstract}</p>
               <p className="mt-7 font-mono text-[11px] text-text-faint">
                 DOI {publication.doi}
-                <span className="ml-3 inline-block text-accent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                {/* Hidden until hover on a pointer device; permanently visible
+                    where there is no hover to reveal it. */}
+                <span className="reveal-on-hover ml-3 inline-block text-accent transition-opacity duration-300">
                   Read the paper →
                 </span>
               </p>

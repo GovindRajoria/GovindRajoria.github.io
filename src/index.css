@@ -337,7 +337,19 @@
     background-color 0.45s ease;
 }
 
-.hud-card:hover,
+/*
+  Every hover rule below is gated on a device that can actually hover. Tailwind
+  wraps its own hover: variant this way; these are hand-written, so without the
+  gate a tap on a phone latches the card into its hover state and leaves it
+  lifted with the brackets showing until something else is touched.
+*/
+@media (hover: hover) and (pointer: fine) {
+  .hud-card:hover {
+    border-color: var(--border-bright);
+    translate: 0 -3px;
+  }
+}
+
 .hud-card:focus-within {
   border-color: var(--border-bright);
   translate: 0 -3px;
@@ -362,7 +374,12 @@
   );
 }
 
-.hud-card:hover .hud-glow,
+@media (hover: hover) and (pointer: fine) {
+  .hud-card:hover .hud-glow {
+    opacity: 1;
+  }
+}
+
 .hud-card:focus-within .hud-glow {
   opacity: 1;
 }
@@ -419,17 +436,47 @@
   border-bottom-left-radius: 0.75rem;
 }
 
-.hud-card:hover::before,
-.hud-card:hover::after,
+@media (hover: hover) and (pointer: fine) {
+  .hud-card:hover::before,
+  .hud-card:hover::after,
+  .hud-card:hover .hud-corners::before,
+  .hud-card:hover .hud-corners::after {
+    opacity: 1;
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+}
+
 .hud-card:focus-within::before,
 .hud-card:focus-within::after,
-.hud-card:hover .hud-corners::before,
-.hud-card:hover .hud-corners::after,
 .hud-card:focus-within .hud-corners::before,
 .hud-card:focus-within .hud-corners::after {
   opacity: 1;
   width: 1.4rem;
   height: 1.4rem;
+}
+
+/* ---------- Hover-only affordances ---------- */
+
+/*
+  A hint that appears on hover, and stays permanently visible on a device that
+  cannot hover — where the alternative is an affordance nobody ever sees.
+  Hand-written because an arbitrary Tailwind variant carrying an @media query
+  is not picked up by the scanner here; verified against the built stylesheet.
+*/
+.reveal-on-hover {
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .reveal-on-hover {
+    opacity: 0;
+  }
+
+  .group:hover .reveal-on-hover,
+  .group:focus-visible .reveal-on-hover {
+    opacity: 1;
+  }
 }
 
 /* ---------- Skills backdrop ---------- */
